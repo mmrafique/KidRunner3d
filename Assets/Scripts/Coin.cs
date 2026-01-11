@@ -1,9 +1,18 @@
 using UnityEngine;
+using DG.Tweening;
 
 public class Coin : MonoBehaviour
 {
     public float rotateSpeed = 180f; // degrees per second
     public AudioClip collectSound;
+
+    private void Start()
+    {
+        // Animación de flotación con DOTween
+        transform.DOMoveY(transform.position.y + 0.5f, 1f)
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo);
+    }
 
     private void Update()
     {
@@ -18,9 +27,16 @@ public class Coin : MonoBehaviour
             if (collectSound != null)
                 AudioSource.PlayClipAtPoint(collectSound, transform.position);
 
+            // Animación al recoger con DOTween
+            transform.DOScale(Vector3.one * 1.5f, 0.2f).SetEase(Ease.OutBounce);
+            transform.DORotate(new Vector3(360, 360, 0), 0.2f, RotateMode.FastBeyond360);
+
+            // Vibración (Sensor móvil)
+            Handheld.Vibrate();
+
             GameManager.instance.AddCoin(1);
 
-            Destroy(gameObject);
+            Destroy(gameObject, 0.2f);
         }
     }
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using DG.Tweening;
 
 public class Obstacle : MonoBehaviour
 {
@@ -25,7 +26,15 @@ public class Obstacle : MonoBehaviour
             AudioSource.PlayClipAtPoint(hitSound, pos);
         }
 
+        // Vibración fuerte (Sensor móvil)
+        Handheld.Vibrate();
+        System.Threading.Thread.Sleep(100);
+        Handheld.Vibrate();
+
         Animator anim = other.GetComponent<Animator>();
+
+        // Efecto visual de daño con DOTween
+        PlayDamageEffect(other.transform);
 
         if (GameManager.instance != null)
         {
@@ -51,6 +60,23 @@ public class Obstacle : MonoBehaviour
                     pc.StunAndRecover(hurtAnimLength, invulnerabilityAfterHit);
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Efecto visual de daño con DOTween
+    /// </summary>
+    private void PlayDamageEffect(Transform playerTransform)
+    {
+        // Temblor (shake)
+        playerTransform.DOShakePosition(0.3f, 0.2f, 10, 90);
+
+        // Cambiar color a rojo si tiene renderer
+        Renderer renderer = playerTransform.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            renderer.material.DOColor(Color.red, 0.2f)
+                .OnComplete(() => renderer.material.DOColor(Color.white, 0.2f));
         }
     }
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using DG.Tweening;
 
 public class ObstacleMoving : MonoBehaviour
 {
@@ -9,7 +10,7 @@ public class ObstacleMoving : MonoBehaviour
     public float hurtAnimLength = 1f;         // length of HURT animation
     public float invulnerabilityAfterHit = 2f;
     public float moveSpeed = 3f;
-  
+
 
 
 
@@ -18,11 +19,11 @@ public class ObstacleMoving : MonoBehaviour
         private void Update()
         {
             // Move obstacle towards player if enabled
-            
+
                 transform.Translate(Vector3.forward * -moveSpeed * Time.deltaTime, Space.World);
-           
+
         }
-    
+
 
     private void OnTriggerEnter(Collider other)
     {
@@ -40,7 +41,15 @@ public class ObstacleMoving : MonoBehaviour
             AudioSource.PlayClipAtPoint(hitSound, pos);
         }
 
+        // Vibración fuerte (Sensor móvil)
+        Handheld.Vibrate();
+        System.Threading.Thread.Sleep(100);
+        Handheld.Vibrate();
+
         Animator anim = other.GetComponent<Animator>();
+
+        // Efecto visual de daño con DOTween
+        PlayDamageEffect(other.transform);
 
         if (GameManager.instance != null)
         {
@@ -68,8 +77,23 @@ public class ObstacleMoving : MonoBehaviour
             }
         }
 
-
-
         Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// Efecto visual de daño con DOTween
+    /// </summary>
+    private void PlayDamageEffect(Transform playerTransform)
+    {
+        // Temblor (shake)
+        playerTransform.DOShakePosition(0.3f, 0.2f, 10, 90);
+
+        // Cambiar color a rojo si tiene renderer
+        Renderer renderer = playerTransform.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            renderer.material.DOColor(Color.red, 0.2f)
+                .OnComplete(() => renderer.material.DOColor(Color.white, 0.2f));
+        }
     }
 }
